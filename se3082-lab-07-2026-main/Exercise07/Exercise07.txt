@@ -1,0 +1,83 @@
+Exercise 7 - MPI Collective Comparison
+
+1. Comparison Table
+
+Exercise 1:
+Collectives: MPI_Bcast + MPI_Send/MPI_Recv
+Array allocation: Full array on every process
+Manual root sum: Yes
+Final result: Root only
+
+Exercise 2:
+Collectives: MPI_Scatter + MPI_Send/MPI_Recv
+Array allocation: Full array on root, chunk on each process
+Manual root sum: Yes
+Final result: Root only
+
+Exercise 3:
+Collectives: MPI_Scatter + MPI_Gather
+Array allocation: Full array on root, chunk on each process
+Manual root sum: Yes
+Final result: Root only
+
+Exercise 4:
+Collectives: MPI_Scatter + MPI_Reduce
+Array allocation: Full array on root, chunk on each process
+Manual root sum: No
+Final result: Root only
+
+Exercise 5:
+Collectives: MPI_Scatter + MPI_Allreduce
+Array allocation: Full array on root, chunk on each process
+Manual root sum: No
+Final result: All processes
+
+Exercise 6:
+Collectives: MPI_Scatter + MPI_Scan
+Array allocation: Full array on root, chunk on each process
+Manual root sum: No
+Final result: Different prefix result per rank
+
+
+2. Execution Times
+
+              2 Processes    4 Processes    8 Processes
+Bcast            0.0058 s       0.0110 s       0.0129 s
+Scatter          0.0046 s       0.0067 s       0.0074 s
+Gather           0.0039 s       0.0061 s       0.0075 s
+Reduce           0.0051 s       0.0064 s       0.0068 s
+Allreduce        0.0046 s       0.0062 s       0.0072 s
+Scan             0.0093 s       0.0132 s       0.0140 s
+
+
+3. Observation
+
+The execution times vary depending on the number of processes and the
+MPI collective operation. In these tests, the measured execution time
+also depends on the local WSL system and CPU scheduling.
+
+The Bcast approach involves broadcasting the complete array to every
+process, which results in more data being communicated.
+
+Scatter distributes only the required chunk to each process.
+
+Gather collects the partial sums at the root, while Reduce combines
+the partial sums directly using MPI_SUM.
+
+Allreduce provides the combined result to every process.
+
+Scan produces a prefix result for each process rather than the same
+global result for all processes.
+
+
+4. Thinking Question
+
+When would you choose MPI_Scan over MPI_Allreduce?
+
+MPI_Scan should be used when each process needs a cumulative result
+from rank 0 through its own rank. MPI_Allreduce should be used when
+every process needs the same global reduction result.
+
+For example, MPI_Scan can be used to calculate cumulative offsets for
+parallel data processing. Each process can use its sum_before_me value
+as an offset when assigning global positions to its local data.
